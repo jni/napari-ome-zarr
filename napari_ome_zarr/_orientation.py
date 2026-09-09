@@ -67,6 +67,31 @@ class VispyOrientationOverlay(ViewerOverlayMixin, VispyCanvasOverlay):
 overlay_to_visual[OrientationOverlay] = VispyOrientationOverlay
 
 
+class AllOrientationsOverlays:
+    def __init__(self, oris: list[OrientationOverlay]):
+        self.n, self.s, self.w, self.e = oris
+        self.oris = oris
+
+    @property
+    def visible(self):
+        return self.n.visible
+
+    @visible.setter
+    def visible(self, value: bool):
+        for ori in self.oris:
+            ori.visible = value
+
+
+def update_orientation_markers(viewer: Viewer, layer: Layer):
+    layer_plugin_data = layer.metadata.get(
+        'napari-ome-zarr', {'plugin': None}
+    )['plugin']
+
+    if layer_plugin_data is None:
+        return
+
+    oris = layer_plugin_data['oris']
+
 def add_orientation_markers(viewer: Viewer, layer: Layer):
 
     print('imma add it!')
