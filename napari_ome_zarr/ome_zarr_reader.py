@@ -714,7 +714,9 @@ def read_ome_zarr(root_group: Group) -> Callable:
                             darray = node_data[level]
                             if darray.ndim > ch_axis:
                                 node_data[level] = da.squeeze(darray, axis=ch_axis)
-                metadata['metadata'] = {'napari-ome-zarr': node.get_attrs(node.group)}
+                metadata['metadata'] = {
+                    'napari-ome-zarr': {'ome': node.get_attrs(node.group)}
+                }
                 rv: LayerData = (node_data, metadata, layer_type)
                 results.append(rv)
 

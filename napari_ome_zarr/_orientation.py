@@ -1,3 +1,5 @@
+import warnings
+
 from napari import Viewer
 from napari.layers import Layer
 
@@ -94,10 +96,10 @@ def update_orientation_markers(viewer: Viewer, layer: Layer):
 
 def add_orientation_markers(viewer: Viewer, layer: Layer):
 
-    print('imma add it!')
-    layer_ome_meta = layer.metadata.get('napari-ome-zarr', None)
+    layer_ome_meta = layer.metadata.get(
+        'napari-ome-zarr', {'ome': None}
+    )['ome']
     if layer_ome_meta is None:
-        import warnings
         warnings.warn('Selected layer has no orientation metadata.')
         return
 
