@@ -70,18 +70,28 @@ overlay_to_visual[OrientationOverlay] = VispyOrientationOverlay
 
 
 class AllOrientationsOverlays:
-    def __init__(self, oris: list[OrientationOverlay]):
-        self.n, self.s, self.w, self.e = oris
-        self.oris = oris
+    def __init__(self, n=None, s=None, w=None, e=None):
+        self.n, self.s, self.w, self.e = n, s, w, e
+        self.oris = [elem for elem in [n, s, w, e] if elem is not None]
 
     @property
     def visible(self):
-        return self.n.visible
+        if len(self.oris) > 0:
+            return self.oris[0].visible
 
     @visible.setter
     def visible(self, value: bool):
         for ori in self.oris:
             ori.visible = value
+
+    @property
+    def size(self):
+        return self.n.size
+
+    @size.setter
+    def size(self, value: int):
+        for ori in self.oris:
+            ori.size = value
 
 
 def update_orientation_markers(viewer: Viewer, layer: Layer):
@@ -94,11 +104,17 @@ def update_orientation_markers(viewer: Viewer, layer: Layer):
 
     oris = layer_plugin_data['oris']
 
+
 def add_orientation_markers(viewer: Viewer, layer: Layer):
 
-    layer_ome_meta = layer.metadata.get(
-        'napari-ome-zarr', {'ome': None}
-    )['ome']
+    plugin_meta = layer.metadata.get(
+        'napari-ome-zarr', {'ome': None, 'plugin': None}
+    )
+    layer_ome_meta = plugin_meta['ome']
+    layer_plugin_meta = plugin_meta['plugin']
+
+    first_run = layer_plugin_meta is None
+
     if layer_ome_meta is None:
         warnings.warn('Selected layer has no orientation metadata.')
         return
