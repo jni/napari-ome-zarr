@@ -1,6 +1,7 @@
 import warnings
 
 from napari import Viewer
+from napari import current_viewer
 from napari.layers import Layer
 
 
@@ -105,15 +106,19 @@ def update_orientation_markers(viewer: Viewer, layer: Layer):
     oris = layer_plugin_data['oris']
 
 
-def add_orientation_markers(viewer: Viewer, layer: Layer):
+def add_orientation_markers(*args, **kwargs):
+
+    viewer = current_viewer()
+
+    layer = viewer.layers.selection.active
+
+    if layer is None:
+        return
 
     plugin_meta = layer.metadata.get(
         'napari-ome-zarr', {'ome': None, 'plugin': None}
     )
     layer_ome_meta = plugin_meta['ome']
-    layer_plugin_meta = plugin_meta['plugin']
-
-    first_run = layer_plugin_meta is None
 
     if layer_ome_meta is None:
         warnings.warn('Selected layer has no orientation metadata.')
@@ -160,3 +165,10 @@ def add_orientation_markers(viewer: Viewer, layer: Layer):
         viewer.canvas.overlays.orientation_e = OrientationOverlay(
             visible=True, text=ori_labels[1], position='middle_right'
         )
+
+    if (add_orientation_markers not in
+            viewer.camera.events.orientation2d.callbacks):
+        viewer.camera.events.orientation2d.connect(add_orientation_markers)
+        viewer.layers.selection.events.active.connect(add_orientation_markers)
+        viewer.dims.events.ndisplay.connect(add_orientation_markers)
+        viewer.dims.events.order.connect(add_orientation_markers)
